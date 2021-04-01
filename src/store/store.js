@@ -38,7 +38,10 @@ const actions = {
             });
 
     },
-    handleAuthStateChanged({ commit }) {
+    logoutUser() {
+        firebaseAuth.signOut();
+    },
+    handleAuthStateChanged({ commit, dispatch, state }) {
         console.log('handleAuthStateChanged');
         firebaseAuth.onAuthStateChanged(user => {
             if (user) {
@@ -50,14 +53,29 @@ const actions = {
                     commit('setUserDetails', {
                         name: userDetails.name,
                         email: userDetails.email,
-                        userId: userDetails.userId,
+                        userId: userId,
                     })
+                });
+                dispatch('firebaseUpdateUser', {
+                    userId: userId,
+                    updates: { online: true }
                 })
+                this.$router.push('/');
             } else {
                 // User is logged out.
+                dispatch('firebaseUpdateUser', {
+                    userId: state.userDetails.userId,
+                    updates: { online: false }
+                })
+                commit('setUserDetails', {});
+                this.$router.replace('/auth');
             }
         });
     },
+    firebaseUpdateUser({ }, payload) {
+        if (payload.userId)
+            firebaseDb.ref('users/' + payload.userId).update(payload.updates);
+    }
 }
 
 const getters = {

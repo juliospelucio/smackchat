@@ -12,9 +12,10 @@
         />
 
         <q-toolbar-title class="absolute-center">
-          {{ title | capitalFirst }}
+          {{ title }}
         </q-toolbar-title>
         <q-btn
+          v-if="!userDetails.userId"
           to="auth"
           class="absolute-right q-pr-sm"
           icon="account_circle"
@@ -23,6 +24,18 @@
           dense
           label="Login"
         />
+        <q-btn
+          v-else
+          @click="logoutUser"
+          class="absolute-right q-pr-sm"
+          icon="account_circle"
+          no-caps
+          flat
+          dense
+        >
+          Logout <br />
+          {{ userDetails.name }}
+        </q-btn>
       </q-toolbar>
     </q-header>
 
@@ -33,16 +46,23 @@
 </template>
 
 <script>
+import { mapState, mapActions } from "vuex";
 export default {
   computed: {
+    ...mapState("store", ["userDetails"]),
     title() {
-      return this.$route.name;
+      return this.$route.name.replace(/^\w/, (c) => c.toUpperCase());
     },
   },
-  filters: {
-    capitalFirst(string) {
-      return string.trim().replace(/^\w/, (c) => c.toUpperCase());
-    },
+  methods: {
+    ...mapActions("store", ["logoutUser"]),
   },
 };
 </script>
+<style lang="stylus">
+.q-toolbar {
+  .q-btn {
+    line-height: 1.2;
+  }
+}
+</style>
