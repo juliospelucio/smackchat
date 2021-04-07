@@ -2,8 +2,8 @@
   <q-page class="flex q-pa-md">
     <q-list class="full-width" separator>
       <q-item
-        v-for="user in users"
-        :key="user.id"
+        v-for="(user, key) in users"
+        :key="key"
         to="chat"
         clickable
         v-ripple
@@ -16,7 +16,6 @@
 
         <q-item-section>
           <q-item-label>{{ user.name }}</q-item-label>
-          <q-item-label caption lines="1">{{ user.email }}</q-item-label>
         </q-item-section>
 
         <q-item-section side>
@@ -30,27 +29,10 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 export default {
-  data() {
-    return {
-      users: [
-        {
-          id: 1,
-          name: "Júlio",
-          online: true,
-        },
-        {
-          id: 2,
-          name: "Anny",
-          online: false,
-        },
-        {
-          id: 3,
-          name: "Mommy",
-          online: true,
-        },
-      ],
-    };
+  computed: {
+    ...mapGetters("store", ["users"]),
   },
 };
 </script>

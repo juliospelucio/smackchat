@@ -1,12 +1,20 @@
+import Vue from 'vue';
 import { firebaseAuth, firebaseDb } from 'boot/firebase'
 
 const state = {
-    userDetails: {}
+    userDetails: {},
+    users: {}
 }
 
 const mutations = {
     setUserDetails(state, payload) {
         state.userDetails = payload;
+    },
+    addUser(state, payload) {
+        Vue.set(state.users, payload.userId, payload.userDetails);
+    },
+    updateUser(state, payload) {
+        Object.assign(state.users[payload.userId], payload.userDetails)
     }
 }
 
@@ -42,12 +50,11 @@ const actions = {
         firebaseAuth.signOut();
     },
     handleAuthStateChanged({ commit, dispatch, state }) {
-        console.log('handleAuthStateChanged');
         firebaseAuth.onAuthStateChanged(user => {
             if (user) {
                 // User is logged in.
                 let userId = firebaseAuth.currentUser.uid;
-                firebaseDb.ref('users/' + userId).once('value', snapshot => {
+                firebaseDb.ref('/users/' + userId).once('value', snapshot => {
                     console.log('snapshot:', snapshot);
                     let userDetails = snapshot.val();
                     commit('setUserDetails', {
@@ -60,7 +67,8 @@ const actions = {
                     userId: userId,
                     updates: { online: true }
                 })
-                this.$router.push('/');
+                dispatch('firebaseGetUsers');
+                // this.$router.push('/');
             } else {
                 // User is logged out.
                 dispatch('firebaseUpdateUser', {
@@ -68,18 +76,43 @@ const actions = {
                     updates: { online: false }
                 })
                 commit('setUserDetails', {});
-                this.$router.replace('/auth');
+                // this.$router.replace('/auth');
             }
         });
     },
     firebaseUpdateUser({ }, payload) {
         if (payload.userId)
             firebaseDb.ref('users/' + payload.userId).update(payload.updates);
+    },
+    firebaseGetUsers({ commit }) {
+        firebaseDb.ref('users').on('child_added', snapshot => {
+            let userDetails = snapshot.val();
+            let userId = snapshot.key;
+            commit('addUser', {
+                userId,
+                userDetails
+            })
+        });
+        firebaseDb.ref('users').on('child_changed', snapshot => {
+            let userDetails = snapshot.val();
+            let userId = snapshot.key;
+            commit('updateUser', {
+                userId,
+                userDetails
+            })
+        });
     }
 }
 
 const getters = {
-
+    users: state => {
+        let usersFiltered = {};
+        Object.keys(state.users).forEach(key => {
+            if (key !== state.userDetails.userId)
+                usersFiltered[key] = state.users[key]
+        })
+        return usersFiltered
+    }
 }
 
 export default {
