@@ -5,7 +5,7 @@ const routes = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', name: 'teleapp', component: () => import('src/pages/PageUsers.vue') },
-      { path: '/chat', name: 'chat', component: () => import('src/pages/PageChat.vue') },
+      { path: '/chat/:otherUserId', name: 'chat', component: () => import('src/pages/PageChat.vue') },
       { path: '/auth', name: 'auth', component: () => import('src/pages/PageAuth.vue') },
     ]
   },
