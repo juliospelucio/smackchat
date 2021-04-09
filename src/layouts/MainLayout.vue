@@ -47,10 +47,14 @@
 
 <script>
 import { mapState, mapActions } from "vuex";
+import mixinOtherUserDetails from "src/mixins/mixin-other-user-details.js";
+
 export default {
+  mixins: [mixinOtherUserDetails],
   computed: {
     ...mapState("store", ["userDetails"]),
     title() {
+      if (this.$route.name === "chat") return this.otherUserDetails.name;
       return this.$route.name.replace(/^\w/, (c) => c.toUpperCase());
     },
   },
